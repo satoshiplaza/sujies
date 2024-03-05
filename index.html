@@ -1,99 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title> ʜᴇʟʟᴏ ᴡᴏʀʟᴅ </title>
-    <style>
-        body {
-            background-color: black;
-            color: green;
-            font-family: 'Courier New', Courier, monospace;
-            text-align: center;
-            margin-top: 20%;
-            font-size: 42px;
-            font-weight: bold;
-        }
-
-        .blinking-cursor {
-            font-weight: 100;
-            color: green;
-            animation: blink 2s infinite step-start;
-        }
-
-        @keyframes blink {
-            50% {
-                opacity: 0;
-            }
-        }
-
-        #fireworks {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        .firework {
-            width: 5px;
-            height: 150px;
-            background-color: yellow;
-            animation: shootUp 2s ease-out forwards;
-        }
-
-        @keyframes shootUp {
-            0% { transform: translateY(0); opacity: 1; }
-            70% { opacity: 1; }
-            100% { transform: translateY(-300px); opacity: 0; }
-        }
-
-        /* Updated explode animation */
-        @keyframes explode {
-            0% {
-                width: 0;
-                height: 0;
-                opacity: 1;
-                border-radius: 50%;
-                background-color: transparent;
-            }
-            100% {
-                width: 200px;
-                height: 200px;
-                opacity: 0;
-                border-radius: 50%;
-                background-color: transparent;
-                box-shadow: 0 0 60px 40px #ff0, 0 0 100px 60px #f00, 0 0 140px 80px #f0f, 0 0 180px 100px #0ff, 0 0 220px 120px #0f0;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confetti & Fireworks</title>
+<style>
+  body {
+    background-color: #000;
+    overflow: hidden;
+  }
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+</style>
 </head>
-<body onload="initFireworks()">
-    <div id="content" style="display: none;">
-        &gt; Hello World!<span class="blinking-cursor">_</span>
-    </div>
+<body>
+<canvas id="confettiCanvas"></canvas>
+<canvas id="fireworksCanvas"></canvas>
+<script>
+  // Confetti
+  (function() {
+    var confettiCanvas = document.getElementById('confettiCanvas');
+    var ctx = confettiCanvas.getContext('2d');
+    var W = window.innerWidth;
+    var H = window.innerHeight;
+    confettiCanvas.width = W;
+    confettiCanvas.height = H;
 
-    <div id="fireworks"></div>
+    function randomInRange(min, max) {
+      return Math.random() * (max - min) + min;
+    }
 
-    <script>
-        function initFireworks() {
-            const fireworksContainer = document.getElementById('fireworks');
-            let firework = document.createElement('div');
-            firework.classList.add('firework');
-            fireworksContainer.appendChild(firework);
+    function Confetti() {
+      this.x = Math.random() * W;
+      this.y = -Math.random() * H;
+      this.r = randomInRange(5, 10);
+      this.color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
+      this.velocityX = randomInRange(-2, 2);
+      this.velocityY = randomInRange(1, 3);
+    }
 
-            firework.addEventListener('animationend', (e) => {
-                // 只在“explode”动画结束时显示文本
-                if (e.animationName === 'explode') {
-                    document.getElementById('content').style.display = 'block';
-                    // 移除烟花元素
-                    fireworksContainer.removeChild(firework);
-                }
-            });
+    Confetti.prototype.draw = function() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
+      ctx.fillStyle = this.color;
+      ctx.fill();
+    };
+
+    Confetti.prototype.update = function() {
+      this.x += this.velocityX;
+      this.y += this.velocityY;
+      if (this.y > H) {
+        this.y = -10;
+        this.x = Math.random() * W;
+      }
+    };
+
+    var confetti = [];
+    for (var i = 0; i < 100; i++) {
+      confetti.push(new Confetti());
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < confetti.length; i++) {
+        confetti[i].draw();
+        confetti[i].update();
+      }
+      requestAnimationFrame(drawConfetti);
+    }
+
+    drawConfetti();
+  })();
+
+  // Fireworks
+  (function() {
+    var fireworksCanvas = document.getElementById('fireworksCanvas');
+    var ctx = fireworksCanvas.getContext('2d');
+    var W = window.innerWidth;
+    var H = window.innerHeight;
+    fireworksCanvas.width = W;
+    fireworksCanvas.height = H;
+
+    function Firework() {
+      this.x = Math.random() * W;
+      this.y = H;
+      this.targetY = Math.random() * H / 2;
+      this.color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
+      this.velocityY = randomInRange(-8, -15);
+      this.radius = randomInRange(2, 4);
+    }
+
+    Firework.prototype.draw = function() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+      ctx.fillStyle = this.color;
+      ctx.fill();
+    };
+
+    Firework.prototype.update = function() {
+      this.y += this.velocityY;
+      if (this.y <= this.targetY) {
+        for (var i = 0; i < 50; i++) {
+          var particle = new Particle(this.x, this.y, this.color);
+          particles.push(particle);
         }
-    </script>
+        fireworks.splice(fireworks.indexOf(this), 1);
+      }
+    };
+
+    var fireworks = [];
+    var particles = [];
+
+    function drawFireworks() {
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < fireworks.length; i++) {
+        fireworks[i].draw();
+        fireworks[i].update();
+      }
+      for (var j = 0; j < particles.length; j++) {
+        particles[j].draw();
+        particles[j].update();
+        if (particles[j].alpha <= 0) {
+          particles.splice(j, 1);
+        }
+      }
+      requestAnimationFrame(drawFireworks);
+    }
+
+    function Particle(x, y, color) {
+      this.x = x;
+      this.y = y;
+      this.velocityX = randomInRange(-5, 5);
+      this.velocityY = randomInRange(-5, 5);
+      this.alpha = 1;
+      this.color = color;
+    }
+
+    Particle.prototype.draw = function() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 2, 0, Math.PI * 2, false);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.alpha;
+      ctx.fill();
+    };
+
+    Particle.prototype.update = function() {
+      this.x += this.velocityX;
+      this.y += this.velocityY;
+      this.alpha -= 0.02;
+    };
+
+    function createFirework() {
+      fireworks.push(new Firework());
+      setTimeout(createFirework, randomInRange(1000, 3000));
+    }
+
+    createFirework();
+    drawFireworks();
+  })();
+</script>
 </body>
 </html>
