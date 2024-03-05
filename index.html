@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
-<head><title> ʜᴇʟʟᴏ ᴡᴏʀʟᴅ </title>
+<head>
+    <title> ʜᴇʟʟᴏ ᴡᴏʀʟᴅ </title>
     <style>
         body {
             background-color: black;
@@ -23,11 +24,62 @@
                 opacity: 0;
             }
         }
+
+        /* 烟花效果的 CSS，简单为了示例 */
+        #fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .firework {
+            position: absolute;
+            bottom: 0;
+            background-color: red;
+            animation: shootUp 0.75s ease-in-out forwards;
+        }
+
+        @keyframes shootUp {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100vh); opacity: 0; }
+        }
     </style>
 </head>
-<body>
-    <div>
+<body onload="initFireworks()">
+    <div id="content" style="display: none;">
         &gt; Hello World!<span class="blinking-cursor">_</span>
     </div>
+
+    <div id="fireworks"></div>
+
+    <script>
+        function initFireworks() {
+            const fireworksContainer = document.getElementById('fireworks');
+            const numOfFireworks = 10;
+
+            for (let i = 0; i < numOfFireworks; i++) {
+                let firework = document.createElement('div');
+                firework.classList.add('firework');
+                firework.style.left = `${Math.random() * 100}%`;
+                firework.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                firework.style.animationDuration = `${0.5 + Math.random() * 1.5}s`;
+                firework.style.animationDelay = `${Math.random() * 1}s`;
+
+                firework.addEventListener('animationend', () => {
+                    firework.remove();
+
+                    if (document.querySelectorAll('.firework').length === 0) {
+                        document.getElementById('content').style.display = 'block';
+                    }
+                });
+
+                fireworksContainer.appendChild(firework);
+            }
+        }
+    </script>
 </body>
 </html>
