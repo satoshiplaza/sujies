@@ -8,9 +8,9 @@
             color: green;
             font-family: 'Courier New', Courier, monospace;
             text-align: center;
-            margin-top: 20%; /* Centers vertically */
-            font-size: 42px; /* Font size */
-            font-weight: bold; /* Make text bold */
+            margin-top: 20%;
+            font-size: 42px;
+            font-weight: bold;
         }
 
         .blinking-cursor {
@@ -42,8 +42,7 @@
             width: 5px;
             height: 150px;
             background-color: yellow;
-            animation: shootUp 2s ease-out forwards, explode 0.3s ease-out 2s forwards;
-            opacity: 0; /* Start invisible */
+            animation: shootUp 2s ease-out forwards;
         }
 
         @keyframes shootUp {
@@ -52,9 +51,23 @@
             100% { transform: translateY(-300px); opacity: 0; }
         }
 
+        /* Updated explode animation */
         @keyframes explode {
-            from { width: 5px; height: 5px; opacity: 1; }
-            to { width: 100px; height: 100px; border-radius: 50%; opacity: 0; background-color: #ff0; }
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+                border-radius: 50%;
+                background-color: transparent;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+                border-radius: 50%;
+                background-color: transparent;
+                box-shadow: 0 0 60px 40px #ff0, 0 0 100px 60px #f00, 0 0 140px 80px #f0f, 0 0 180px 100px #0ff, 0 0 220px 120px #0f0;
+            }
         }
     </style>
 </head>
